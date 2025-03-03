@@ -36,13 +36,22 @@ userRouter.post('/login',async(req,res)=>{
         res.status(500).json({error:err.message});
     }
 })
-userRouter.get('/',auth,async(req,res)=>{
-    try{
-        const user= await userModel.findById(req.userId);
-        select('password');
-        res.status(200).json({data:user});
-    }catch(err){
-        res.status(500).json({error:err.message});
+userRouter.get('/', auth, async (req, res) => {
+    try {
+        console.log("Decoded User:", req.user);
+        if (!req.user || !req.user.userId) {
+            return res.status(401).json({ message: "Invalid user token" });
+        }
+
+        const user = await userModel.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ data: user });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-})
+});
+
 export default userRouter;
