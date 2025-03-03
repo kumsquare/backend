@@ -1,17 +1,21 @@
-import jwt from 'jsonwebtoken';
-const auth = (req,res,next) => {
-    const token = req.header('authorization')
-    if(!token)
-        res.status(401).json({message:'no token, authorization denied'})
-    try{
-        const verified = jwt.verify(token.split(" ")[1],"jon")
-        console.log(verified)
-        req.user = verified
-        if(!roles.includes(req.user.role))
-            res.status(401).json({message:'access denied'})
-        next()
-    }catch(err){
-        res.status(401).json({message:'token is not valid'})
+import jwt from "jsonwebtoken";
+
+const auth = (req, res, next) => {
+    const authHeader = req.header("Authorization"); // Case-sensitive: "Authorization"
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "No token, authorization denied" });
     }
-}
+
+    try {
+        const token = authHeader.split(" ")[1]; // Extract token
+        const verified = jwt.verify(token, "jon"); // Replace "jon" with process.env.JWT_SECRET
+        console.log("Verified User:", verified);
+        req.user = verified;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: "Token is not valid" });
+    }
+};
+
 export default auth;
